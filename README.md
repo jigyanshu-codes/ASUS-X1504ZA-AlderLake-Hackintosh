@@ -16,7 +16,7 @@ A fully tested, meticulously documented OpenCore EFI and installation guide for 
 
 ---
 
-## 📸 Screenshots & Proof of Operation
+## Screenshots & System Verification
 
 | System Overview & Specs | Iris Xe Metal 2 Graphics Acceleration |
 | :---: | :---: |
@@ -28,30 +28,30 @@ A fully tested, meticulously documented OpenCore EFI and installation guide for 
 
 ---
 
-## 💻 Hardware Specifications
+## Hardware Specifications
 
-| Component | Hardware Details | macOS Compatibility |
-| :--- | :--- | :--- |
-| **Model** | ASUS Vivobook 15 `X1504ZA` / `Vivobook_ASUSLaptop X1504ZA_X1504ZA` | Fully Supported |
-| **Processor** | Intel Core i5-1235U (10 Cores: 2 Performance + 8 Efficiency, 12 Threads, up to 4.40 GHz) | ✅ Working via `CpuTopologyRebuild` + `CpuTscSync` |
-| **Integrated GPU** | Intel Iris Xe Graphics GT2 (`0x46A8` / Alder Lake-UP3 GT2) | ✅ Working (1536 MB VRAM, Metal 2, Full QE/CI acceleration) |
-| **RAM** | 20 GB DDR4 3200 MHz (4 GB Onboard + 16 GB SO-DIMM) | ✅ Working (Dual-Channel) |
-| **Storage** | 512 GB Samsung PM9B1 NVMe SSD (`MZVL4512HBLU-00B00`) | ✅ Working via `NVMeFix.kext` |
-| **Display** | 15.6" Full HD (1920x1080) 60Hz 16:9 Slim-Bezel Display | ✅ Working with Native Brightness Slider |
-| **Trackpad** | ASUS Precision Touchpad `ASUP1200` (`ACPI\VEN_ASUP&DEV_1200` on Intel I2C1 `00:15.1`) | 🟡 Working (Smooth cursor & clicks in polling mode) |
-| **Keyboard** | ASUS I8042 PS/2 Keyboard with Brightness/Fn Keys | ✅ Working via `VoodooPS2Controller` + `BrightnessKeys` |
-| **Audio** | Realtek ALC256 via Intel Smart Sound Technology (`8086:51C8`) | ⚠️ Hardware Limitation (See Audio Section below) |
-| **Wi-Fi** | MediaTek Wi-Fi 6 MT7902 M.2 PCIe Card | ❌ Hardware Limitation (No macOS drivers exist) |
-| **Bluetooth** | MediaTek Bluetooth Adapter (USB `0x13d3:0x3568`) | 🟡 Detected (Requires external dongle or M.2 upgrade for full Airdrop) |
-| **Webcam** | USB2.0 HD UVC WebCam (`0x04f2:0xb797`) | ✅ Working Natively Out of the Box |
-| **Ports** | 1x USB-C 3.2 Gen 1, 2x USB-A 3.2 Gen 1, 1x USB-A 2.0, 1x HDMI 1.4 | ✅ Working (Mapped) |
-| **Battery / Power** | 3-Cell 42Wh Lithium-ion Battery with 65W AC Adapter | ✅ Working (Accurate percentage, charging status via `AsusSMC`) |
+| Component | Hardware Details | Status | Notes |
+| :--- | :--- | :---: | :--- |
+| **Model** | ASUS Vivobook 15 `X1504ZA` / `Vivobook_ASUSLaptop X1504ZA_X1504ZA` | `Supported` | Motherboard ID: `X1504ZA` |
+| **Processor** | Intel Core i5-1235U (10 Cores: 2P + 8E, 12 Threads, up to 4.40 GHz) | `Working` | Managed via `CpuTopologyRebuild` + `CpuTscSync` |
+| **Integrated GPU** | Intel Iris Xe Graphics GT2 (`0x46A8` / Alder Lake-UP3 GT2) | `Working` | 1536 MB VRAM, Metal 2, Full QE/CI acceleration |
+| **RAM** | 20 GB DDR4 3200 MHz (4 GB Onboard + 16 GB SO-DIMM) | `Working` | Dual-Channel enabled |
+| **Storage** | 512 GB Samsung PM9B1 NVMe SSD (`MZVL4512HBLU-00B00`) | `Working` | Managed via `NVMeFix.kext` |
+| **Display** | 15.6" Full HD (1920x1080) 60Hz 16:9 Slim-Bezel Display | `Working` | Native brightness slider in Control Center |
+| **Trackpad** | ASUS Precision Touchpad `ASUP1200` (`ACPI\VEN_ASUP&DEV_1200` on I2C1 `00:15.1`) | `Partial` | Smooth cursor & clicks in polling mode (`-vi2c-force-polling`) |
+| **Keyboard** | ASUS I8042 PS/2 Keyboard with Brightness/Fn Keys | `Working` | Managed via `VoodooPS2Controller` + `BrightnessKeys` |
+| **Audio** | Realtek ALC256 via Intel Smart Sound Technology (`8086:51C8`) | `Limitation` | Intel cDSP hardware limitation; USB/DAC audio works out of the box |
+| **Wi-Fi** | MediaTek Wi-Fi 6 MT7902 M.2 PCIe Card | `Unsupported` | Hardware limitation: No macOS driver exists in the ecosystem |
+| **Bluetooth** | MediaTek Bluetooth Adapter (USB `0x13d3:0x3568`) | `Detected` | Detected; external dongle recommended for full AirDrop support |
+| **Webcam** | USB2.0 HD UVC WebCam (`0x04f2:0xb797`) | `Working` | Works natively out of the box |
+| **Ports** | 1x USB-C 3.2 Gen 1, 2x USB-A 3.2 Gen 1, 1x USB-A 2.0, 1x HDMI 1.4 | `Working` | Custom mapped via `UTBDefault.kext` |
+| **Battery / Power** | 3-Cell 42Wh Lithium-ion Battery with 65W AC Adapter | `Working` | Accurate percentage and charging state via `AsusSMC` |
 
 ---
 
-## 📊 Detailed Feature Status
+## Feature Status & Hardware Support Matrix
 
-### ✅ What is Working (100% Tested & Verified)
+### Verified Operational Features
 * **Intel Iris Xe Full Graphics Acceleration:**
   * **1536 MB VRAM** smoothly allocated.
   * **Metal 2 Acceleration** active (`Intel(R) TGL Unknown` Metal device).
@@ -62,118 +62,158 @@ A fully tested, meticulously documented OpenCore EFI and installation guide for 
   * Native brightness slider integrated right into macOS Control Center and System Settings.
   * Function keys (Fn + F4/F5) dynamically adjust backlight smoothly without flickering.
 * **Trackpad (`ASUP1200`):**
-  * Fully responsive cursor movement, tap-to-click, physical clicks, and dragging working via `VoodooI2C` + `VoodooI2CHID`.
+  * Smooth cursor tracking, left-click, right-click, and mechanical physical click working cleanly using customized `VoodooI2C` and `VoodooI2CHID` in polling mode.
 * **Keyboard & Special Keys:**
-  * Full ASUS PS/2 keyboard working natively.
-  * Volume shortcuts, brightness keys, sleep hotkeys functional.
-* **Battery & Power Management:**
-  * Real-time battery percentage, cycle count, and charging state accurately reported via `SMCBatteryManager` and `AsusSMC`.
-* **CPU Core Power Management:**
-  * Intel Thread Director emulation working through `CpuTopologyRebuild.kext`, properly utilizing both P-cores and E-cores without core starvation or thermal throttling.
-* **Storage & NVMe:**
-  * Samsung PM9B1 NVMe SSD runs cool and fast with `NVMeFix.kext`.
-* **Wired iPhone Personal Hotspot (USB Tethering):**
-  * High-speed, stable internet access from your iPhone via USB cable.
-* **Apple Services (iCloud, App Store, iMessage):**
-  * `NullEthernet.kext` + `SSDT-RMNE.aml` generates a built-in `en0` network interface, granting seamless access to the Mac App Store and iCloud.
-* **System Stability:**
-  * Clean restarts, shutdowns, and kernel panic protections (`debug=0x100`, `keepsyms=1`).
+  * Built-in keyboard operates with zero key drops or delays.
+  * Brightness keys, volume keys, and media controls respond natively.
+* **Power Management & Thermal Regulation:**
+  * Hybrid 2 Performance + 8 Efficiency cores managed efficiently via `CpuTopologyRebuild.kext`.
+  * Dynamic clock scaling and native C-states configured via `SSDT-PLUG-ALT.aml`.
+  * Fan curves and battery readouts accurately tracked via `VirtualSMC.kext` and `AsusSMC.kext`.
+* **High-Speed Storage:**
+  * Samsung PM9B1 NVMe SSD runs with full TRIM support and APFS compatibility via `NVMeFix.kext`.
+* **Native Apple Services (iCloud, App Store, iMessage):**
+  * Built-in dummy Ethernet interface (`SSDT-RMNE.aml` + `NullEthernet.kext`) provides `en0` with `Built-In` flag enabled, allowing full Apple ID login, App Store downloads, and iCloud synchronization.
 
 ---
 
-### 🟡 What is Under Active Progress (Work In Progress)
+### Work In Progress & Known Hardware Limitations
 
-#### 1. Internal Audio (Speakers & Internal Microphone)
-* **Why it doesn't work internally yet:**
-  On 12th Gen Intel Alder Lake laptops, the audio codec (Realtek ALC256) is **not** wired through a legacy Azalia High Definition Audio controller. Instead, ASUS routes the codec through **Intel Smart Sound Technology (Intel SST cDSP / SoundWire / cAVS)** (`PCI\VEN_8086&DEV_51C8` / `_SB.PC00.I2C1.HDAC`).
-  macOS has **never** included drivers for Intel's proprietary SST digital signal processors. Because of this, traditional `AppleALC` cannot see or communicate with the internal speakers or microphone.
-* **The Perfect Plug-and-Play Solution:**
-  * **USB-C / USB-A to 3.5mm DAC Adapter:** Plugging in any cheap USB audio dongle or Apple's \$9 USB-C Headphone Adapter works **100% instantly out of the box** with macOS native `AppleUSBAudio`! Both crystal-clear stereo audio and microphone input work flawlessly.
-  * **Bluetooth Headphones / External Speakers:** Any Bluetooth earphones, headphones, or external Bluetooth speaker connect and stream high-quality audio immediately.
+#### 1. Audio: Realtek ALC256 via Intel Smart Sound Technology (`8086:51C8`)
+* **The Root Cause:**
+  Unlike older Intel generations where audio codecs are wired to a standard legacy Intel HD Audio controller (`HDEF`), 12th Gen Alder Lake routes the Realtek ALC256 codec strictly through the proprietary **Intel Smart Sound Technology (SST) cDSP** (`PCI\VEN_8086&DEV_51C8`).
+* **Why AppleALC Fails Silently:**
+  `AppleALC.kext` expects standard HD Audio bus commands (`HDAController`). Because the SST firmware blocks direct HDA register writes without proprietary Intel IPC blobs, AppleALC probe loops time out (`AppleHDAController::probe failed`).
+* **Why HDAUniversal Breaks Graphics:**
+  Third-party drivers like `HDAUniversal.kext` hook the shared `8086:51C8` PCI controller, conflicting with the Iris Xe display audio/power pipeline. This trips the WhateverXe handoff check and throws macOS into unaccelerated 7 MB VESA mode.
+* **The Instant, Recommended Workaround:**
+  * **USB-C / USB-A to 3.5mm DAC Adapter:** Plugging in any standard USB audio dongle or Apple's USB-C Headphone Adapter works **instantly out of the box** with macOS native `AppleUSBAudio`! Both crystal-clear stereo audio and microphone input work flawlessly.
+  * **Bluetooth Audio:** Connecting Bluetooth speakers or headphones provides high-quality wireless sound.
 
-#### 2. Trackpad Interrupt Mode (Native GPIO Pinning)
-* The trackpad is currently operating in **Polling Mode** (`-vi2c-force-polling`). It is completely smooth and usable for daily tasks, typing, and navigation. We are currently working on resolving the exact APIC-to-GPIO interrupt pin registration to enable native low-power interrupt mode.
-
-#### 3. Wi-Fi (MediaTek MT7902 Hardware Barrier)
-* **Hardware Limitation:** The factory Wi-Fi card shipped in this Vivobook is the **MediaTek MT7902**. The Hackintosh open-source community currently has **no macOS kexts** for MediaTek Wi-Fi 6 chipsets (neither AirportItlwm nor OpenIntelWireless support MediaTek).
-* **Recommended Options:**
-  1. **USB Tethering (Free & Instant):** Connect your iPhone or Android via USB cable to share your internet connection instantly!
-  2. **USB Wi-Fi Nano Dongle:** A \$5 Realtek-based USB Wi-Fi adapter (e.g. TP-Link TL-WN725N using Wireless-USB-Big-Sur-Adapter).
-  3. **M.2 Card Replacement (The Ultimate Fix):** Swap the factory MediaTek M.2 card for an **Intel AX200** or **Intel AX210** (approx. \$15 on Amazon/eBay), which works natively with `AirportItlwm.kext` for native macOS Wi-Fi!
-
----
-
-## 🧠 The "Secret Sauce" — Deep Technical Breakthroughs
-
-If you are curious about *how* this EFI was engineered to bypass seemingly impossible obstacles, here is the technical breakdown:
-
-### 1. Achieving 1536 MB Iris Xe Graphics Acceleration
-Intel Iris Xe GT2 (`0x46A8`) is not natively supported by macOS out of the box. Booting without modification results in a black screen, a 7 MB VESA fallback, or a Line 8506 handoff kernel fault.
-* **The Solution:** We deployed a binary-patched build of **WhateverXe (v0.7.0)**.
-* Specific hex patches were injected at offsets `0x3c4a` (bypassing the `N97NativeProbeBlocked` rejection check) and offsets `0x56b63`, `0xa2e1c`, and `0xa3297` (fixing the CoreDisplay handoff fault).
-* In `DeviceProperties`, we enable the framebuffer patch with stolen memory overrides (`framebuffer-stolenmem: 0x03C00000`).
-
-### 2. Conquering the ASUS `ASUP1200` Precision Trackpad
-ASUS Vivobook laptops implement their touchpad as `Device (ETPD)` under the ACPI path `_SB.PC00.I2C1`. Making it communicate with `VoodooI2C` required solving 4 simultaneous challenges:
-1. **DSDT GPIO Hiding Patched:** In ASUS's factory DSDT, the `GPI0` controller checks a BIOS NVS variable `GPHD`. If Windows 11 Modern Standby is detected, `GPHD == 1`, causing `GPI0._HID` to return generic `PNP0C02` with status `0x08` (disabled). We patched `DSDT.aml` so that `GPI0._HID` unconditionally returns `"INTC1055"` and `_STA` unconditionally returns `0x0F` (Present & Enabled).
-2. **Apple LPSS Conflict Blocked:** macOS ships with native drivers `AppleIntelLpssI2C` and `AppleIntelLpssI2CController`. These native drivers latch onto the Alder Lake I2C controller (`00:15.1` / `51E9`) and reject third-party connections. We added explicit kernel blocks in `config.plist` under `Kernel -> Block` with `Strategy: Disable` to prevent Apple's drivers from stealing the bus.
-3. **I2C Controller Matching:** Injected `0x51e98086` explicitly into `VoodooI2CPCIAlderLakeController`'s `IOPCIMatch`.
-4. **Strict Kext Load Order:** Enforced Dortania's strict dependency order:
-   `VoodooI2CServices` $\rightarrow$ `VoodooGPIO` $\rightarrow$ `VoodooInput` $\rightarrow$ `VoodooI2C` $\rightarrow$ `VoodooI2CHID`.
+#### 2. Wi-Fi: MediaTek MT7902 M.2 Card
+* **The Limitation:**
+  The factory Wi-Fi card in this laptop is a **MediaTek MT7902**.
+* **Driver Ecosystem:**
+  The open-source Hackintosh community currently has drivers for Intel Wi-Fi (`AirportItlwm`) and select Broadcom cards (`OpenCore-Legacy-Patcher`), but **no macOS kernel driver exists for the MediaTek MT7902 chipset**.
+* **Clean Solutions:**
+  * **Instant Solution (Zero Cost):** Plug in your iPhone or Android phone via USB cable and enable **Personal Hotspot (USB Tethering)**. macOS recognizes it natively as a 1000 Mbps high-speed network interface (`en1`/`en2`) with zero configuration required!
+  * **Hardware Upgrade (\$15-\$20):** Replace the M.2 2230 Wi-Fi card with an **Intel AX200 / AX201 / AX210** (which works with `AirportItlwm` for native macOS Wi-Fi) or a Broadcom **BCM94360NG** for native AirDrop and Continuity.
 
 ---
 
-## ⚙️ BIOS Settings
+## Technical Architecture & Driver Patches
 
-Before booting the macOS installer or OpenCore USB, reboot your ASUS Vivobook, press **F2** repeatedly to enter BIOS setup, and set the following:
-
-### Disable ❌
-* **Fast Boot** (`Advanced` or `Boot` tab)
-* **Secure Boot** (`Security` tab $\rightarrow$ `Secure Boot` $\rightarrow$ `Disabled`)
-* **Intel VMD Technology / Intel RST** (Must be set to `AHCI` mode if option is present)
-* **Wake on LAN / Network Stack**
-
-### Enable ✅
-* **VT-x (Virtualization Technology)**
-* **Intel AES-NI**
-* **XHCI Hand-off** (Under `Advanced` $\rightarrow$ `USB Configuration`)
-* **SATA / NVMe Operation Mode:** `AHCI`
-
-Save changes and exit (**F10**).
+### 1. The Alder Lake-U Iris Xe Breakthrough
+Alder Lake-U integrated graphics (`8086:46A8`) previously failed to initialize on macOS due to a strict internal port handoff requirement in WhateverXe:
+1. **eDP Boot Handoff Bypass (Offset `0x56b63`):**
+   * WhateverXe originally required the internal laptop screen (DDI 0) to report software mode `1`.
+   * On 12th Gen Alder Lake-U laptops, firmware initialization leaves the panel in mode `0`.
+   * **The Fix:** Binary instruction patched from `jb 0x56b77` (`72 12`) to `jb 0x56b7b` (`72 16`), cleanly accepting both mode 0 and mode 1 and eliminating the line 8506 handoff fault.
+2. **Panel Timing Calibration (Offset `0xa2e1c`):**
+   * Patched `jne 0xa2d85` (`0f 85`) to `ja 0xa2d85` (`0f 87`), allowing native panel timing calculation for internal laptop panels.
+3. **Internal Backlight PWM Target (Offset `0xa3297`):**
+   * Patched `jne 0xa3250` (`75 b7`) to `ja 0xa3250` (`77 b7`), unlocking hardware backlight PWM scaling.
+4. **Strict Kext Load Order:**
+   * OpenCore strictly loads in Dortania dependency sequence:
+     `Lilu.kext` $ightarrow$ `AMFIPass.kext` $ightarrow$ `WhateverXe.kext` $ightarrow$ `VirtualSMC.kext`.
 
 ---
 
-## 🚀 Quick Setup & Installation Guide
+## Post-Installation: Intel Iris Xe 1536MB Acceleration Restorer
 
-### Step 1: Prepare Your macOS Installer USB
-1. Create a bootable macOS USB (macOS 14 Sonoma, 15 Sequoia, or 26 Tahoe) using Apple's official `createinstallmedia` tool or the Dortania guide.
-2. Mount the **EFI partition** of your USB drive using MountEFI or ProperTree.
+If your system ever boots into unaccelerated **"Intel Iris Xe Graphics 7 MB"** (VESA mode), you can restore full 1536 MB Metal 2 acceleration in under 60 seconds using our dedicated automated tool.
+
+### Running the Acceleration Restorer
+Open **Terminal** in macOS and execute:
+```bash
+sudo ./Utilities/activate_acceleration.sh
+```
+*(Or simply double-click [`Utilities/Restore_1536MB_Acceleration.command`](Utilities/Restore_1536MB_Acceleration.command) in Finder).*
+
+### What the Script Automates:
+1. **Conflict Purge:** Removes conflicting audio kexts (`HDAUniversal.kext`, `VoodooHDA.kext`) that cause display engine arbitration panics.
+2. **Staging Cache Cleanup:** Executes `kmutil clear-staging` to prevent macOS from loading quarantined or orphaned drivers.
+3. **Driver Deployment:** Checks for `WhateverXe-Graphics-0.4.0.pkg`, automatically downloading it from GitHub releases if missing, and validates `/Library/Extensions/AppleIntelTGL*` and `/Library/GPUBundles`.
+4. **Permission & Quarantine Sanitization:** Enforces `root:wheel 755` permissions and strips quarantine attributes (`xattr -cr`).
+5. **Metal Optimization:** Sets `AllowOnePassMetalScaling:Enabled = false` in `CoreMedia.plist` to prevent video scaling glitches.
+6. **AuxKC Direct Compilation:** Builds `/Library/KernelCollections/AuxiliaryKernelExtensions.kc` using `kmutil create -n aux` with `--allow-missing-kdk` and `--no-authentication`.
+
+> [!CAUTION]
+> ### CRITICAL: Avoid The "System Settings Trap"
+> When the script completes, macOS may display a notification saying:
+> *"System Extension Blocked"* or prompt you to approve extensions in **System Settings -> Privacy & Security**.
+>
+> 1. **DO NOT OPEN SYSTEM SETTINGS!**
+> 2. **DO NOT CLICK 'ALLOW' OR 'RESTART' INSIDE SYSTEM SETTINGS!**
+>
+> **Why?**
+> Clicking "Restart" inside System Settings triggers macOS's native `syspolicyd` daemon to run Apple's internal `kmutil rebuild` **without** `--allow-missing-kdk`. This silently purges the unsigned Iris Xe graphics drivers from the kernel collection and throws macOS right back into the unaccelerated 7 MB VESA fallback!
+>
+> **The Safe Reboot Procedure:**
+> 1. Press **[Enter]** directly inside the Terminal window to reboot.
+> 2. In the OpenCore Boot Picker, press **Spacebar** and select **Reset NVRAM** once.
+> 3. Boot into macOS, and enjoy full **Intel Iris Xe 1536 MB Metal 2 acceleration**!
+
+---
+
+## Installation & Setup Guide
+
+### Prerequisites
+* A USB flash drive (16 GB or larger).
+* macOS installer image (macOS Tahoe 26.x, macOS Sequoia 15.x, or macOS Sonoma 14.x).
+* Windows 11 / Linux or an existing Mac to create the bootable drive.
+
+### Step-by-Step Installation
+
+#### 1. BIOS Settings
+Restart your laptop and press **F2** to enter BIOS Setup. Set the following options:
+* **Disable:**
+  * Secure Boot (`Security` $ightarrow$ `Secure Boot` $ightarrow$ `Disabled`)
+  * Fast Boot (`Boot` $ightarrow$ `Fast Boot` $ightarrow$ `Disabled`)
+  * Intel VMD / RAID (`Advanced` $ightarrow$ `VMD Configuration` $ightarrow$ `Disabled` / AHCI mode)
+* **Enable:**
+  * VT-x (Intel Virtualization Technology)
+  * Above 4G Decoding (if available)
+
+#### 2. Prepare USB Installer
+1. Create a standard bootable macOS USB installer using standard tools (such as `createinstallmedia` or gibMacOS).
+2. Mount the **EFI partition** of your bootable USB.
 3. Copy the `EFI` folder from this repository directly into the root of your USB's EFI partition.
 
-### Step 2: Generate Your Personal SMBIOS (CRUCIAL!)
-For privacy, security, and to avoid Apple ID blacklisting, **all serial numbers in this repository are replaced with placeholders**.
+#### 3. Generate Unique SMBIOS Data
+> [!IMPORTANT]
+> The `config.plist` in this repository contains sanitized placeholder serial numbers (`C02000000000`). You **MUST** generate your own unique serials before logging into Apple ID / iCloud!
 
-> [!WARNING]
-> Do NOT boot without generating your own SMBIOS! Follow our quick guide:
-> **[Read the Step-by-Step SMBIOS Generation Guide](Utilities/generate_smbios.md)**
-> (Takes less than 2 minutes using GenSMBIOS for model `MacBookPro16,2`).
+Use **[GenSMBIOS](https://github.com/corpnewt/GenSMBIOS)** to generate values for **MacBookPro16,2**:
+* Open your `config.plist` in **ProperTree** or **OpenCore Configurator**.
+* Navigate to `PlatformInfo` $ightarrow$ `Generic`.
+* Fill in:
+  * `SystemSerialNumber`
+  * `MLB` (Board Serial)
+  * `SystemUUID` (SmUUID)
+* Save `config.plist`.
 
-### Step 3: Boot and Install
-1. Insert the USB into the USB 3.0 port of your Vivobook.
-2. Power on and press **Esc** repeatedly to open the ASUS Boot Selection Menu.
-3. Select your USB drive (UEFI).
-4. At the OpenCore Boot Picker:
+#### 4. Boot & Install
+1. Insert the USB drive and power on your laptop while pressing **Esc** to enter the boot menu.
+2. Select your USB drive (UEFI Partition).
+3. At the OpenCore boot picker:
    * **First-time boot:** Press **Spacebar** to reveal tools and select **Reset NVRAM**.
-   * Then select **Install macOS** (or your macOS drive).
-5. Follow the macOS installer prompts to format your internal SSD partition as **APFS** (GUID Partition Map) and proceed with the installation.
+   * Then select **Install macOS** (or your macOS target partition).
+4. Follow the macOS installer prompts to format your internal SSD partition as **APFS** (GUID Partition Map) and complete the installation.
 
 ---
 
-## 🛠️ Post-Installation Utilities & Tips
+## Post-Installation & Troubleshooting Utilities
 
 We have bundled helpful post-install scripts inside the [`Utilities`](Utilities/) folder:
 
-### 1. iPhone USB Tethering Drop Fix
+### 1. Graphics Acceleration Restorer
+Restores full 1536 MB Metal 2 acceleration if the system ever reverts to 7 MB VESA:
+```bash
+sudo ./Utilities/activate_acceleration.sh
+```
+
+### 2. iPhone USB Tethering Drop Fix
 If your iPhone personal hotspot connection ever stalls or drops when your phone screen turns off, simply run:
 ```bash
 chmod +x Utilities/fix_tethering.sh
@@ -181,7 +221,7 @@ chmod +x Utilities/fix_tethering.sh
 ```
 *This cleanly cycles `usbmuxd` and restarts the network interface without requiring a computer restart.*
 
-### 2. Optimal Power & Sleep Management
+### 3. Optimal Power & Sleep Management
 To prevent macOS from prematurely suspending USB ports:
 ```bash
 chmod +x Utilities/optimize_power.sh
@@ -190,7 +230,7 @@ chmod +x Utilities/optimize_power.sh
 
 ---
 
-## 📂 Repository File Structure
+## Repository Structure
 
 ```text
 ├── EFI/
@@ -208,6 +248,7 @@ chmod +x Utilities/optimize_power.sh
 │       │   └── SSDT-XOSI.aml           # Windows 11 ACPI OS Simulation
 │       ├── Kexts/                      # Kernel Extensions
 │       │   ├── Lilu.kext               # Base Kernel Patcher
+│       │   ├── AMFIPass.kext           # AMFI Signature Enabler
 │       │   ├── WhateverXe.kext         # Patched Iris Xe Metal Graphics Driver
 │       │   ├── VirtualSMC.kext         # SMC Emulator
 │       │   ├── AsusSMC.kext            # ASUS Laptop Fn Keys & Fan Controls
@@ -227,6 +268,8 @@ chmod +x Utilities/optimize_power.sh
 │       └── config.plist                # Fully Validated OpenCore 1.0.8 Configuration
 ├── Screenshots/                        # Verified Operation Proof Images
 ├── Utilities/                          # Helpful Helper Scripts
+│   ├── activate_acceleration.sh        # Dedicated 1536MB Acceleration Restorer
+│   ├── Restore_1536MB_Acceleration.command # Clickable macOS Automation Tool
 │   ├── fix_tethering.sh                # USB Tethering Recovery Script
 │   ├── optimize_power.sh               # Sleep & Power Config Script
 │   └── generate_smbios.md              # SMBIOS Generator Walkthrough
@@ -235,7 +278,7 @@ chmod +x Utilities/optimize_power.sh
 
 ---
 
-## ❤️ Credits & Acknowledgements
+## Credits & Acknowledgements
 
 This EFI is made possible by the incredible work of the Hackintosh open-source community:
 * **[Acidanthera](https://github.com/acidanthera)** — for OpenCorePkg, Lilu, VirtualSMC, VoodooPS2, and AppleALC.
@@ -244,9 +287,9 @@ This EFI is made possible by the incredible work of the Hackintosh open-source c
 * **[Dortania](https://dortania.github.io/)** — for the gold-standard OpenCore Install Guide.
 * **[hieplpvip](https://github.com/hieplpvip)** — for AsusSMC.
 * **[b00t0x](https://github.com/b00t0x)** — for CpuTopologyRebuild.
+* **[Belugaa_01](https://www.reddit.com/user/Belugaa_01/)** — for initial Alder Lake-U offset discovery.
 
 ---
 
-### 🌟 Star This Repository!
-If this repository helped you get your ASUS Vivobook or Alder Lake laptop running macOS with Metal 2 graphics acceleration, please leave a **Star ⭐** to help others find this guide!
-
+### Community & Support
+If this repository helped you get your ASUS Vivobook or Alder Lake laptop running macOS with Metal 2 graphics acceleration, please leave a Star on GitHub to help others find this guide!
