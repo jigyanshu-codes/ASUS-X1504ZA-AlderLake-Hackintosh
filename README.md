@@ -97,7 +97,7 @@ A fully tested, meticulously documented OpenCore EFI and installation guide for 
   The open-source Hackintosh community currently has drivers for Intel Wi-Fi (`AirportItlwm`) and select Broadcom cards (`OpenCore-Legacy-Patcher`), but **no macOS kernel driver exists for the MediaTek MT7902 chipset**.
 * **Clean Solutions:**
   * **Instant Solution (Zero Cost):** Plug in your iPhone or Android phone via USB cable and enable **Personal Hotspot (USB Tethering)**. macOS recognizes it natively as a 1000 Mbps high-speed network interface (`en1`/`en2`) with zero configuration required!
-  * **Hardware Upgrade (\$15-\$20):** Replace the M.2 2230 Wi-Fi card with an **Intel AX200 / AX201 / AX210** (which works with `AirportItlwm` for native macOS Wi-Fi) or a Broadcom **BCM94360NG** for native AirDrop and Continuity.
+  * **Hardware Upgrade (\$15-20):** Replace the M.2 2230 Wi-Fi card with an **Intel AX200 / AX201 / AX210** (which works with `AirportItlwm` for native macOS Wi-Fi) or a Broadcom **BCM94360NG** for native AirDrop and Continuity.
 
 ---
 
@@ -115,7 +115,7 @@ Alder Lake-U integrated graphics (`8086:46A8`) previously failed to initialize o
    * Patched `jne 0xa3250` (`75 b7`) to `ja 0xa3250` (`77 b7`), unlocking hardware backlight PWM scaling.
 4. **Strict Kext Load Order:**
    * OpenCore strictly loads in Dortania dependency sequence:
-     `Lilu.kext` $ightarrow$ `AMFIPass.kext` $ightarrow$ `WhateverXe.kext` $ightarrow$ `VirtualSMC.kext`.
+     `Lilu.kext` → `AMFIPass.kext` → `WhateverXe.kext` → `VirtualSMC.kext`.
 
 ---
 
@@ -168,9 +168,9 @@ sudo ./Utilities/activate_acceleration.sh
 #### 1. BIOS Settings
 Restart your laptop and press **F2** to enter BIOS Setup. Set the following options:
 * **Disable:**
-  * Secure Boot (`Security` $ightarrow$ `Secure Boot` $ightarrow$ `Disabled`)
-  * Fast Boot (`Boot` $ightarrow$ `Fast Boot` $ightarrow$ `Disabled`)
-  * Intel VMD / RAID (`Advanced` $ightarrow$ `VMD Configuration` $ightarrow$ `Disabled` / AHCI mode)
+  * Secure Boot (`Security` → `Secure Boot` → `Disabled`)
+  * Fast Boot (`Boot` → `Fast Boot` → `Disabled`)
+  * Intel VMD / RAID (`Advanced` → `VMD Configuration` → `Disabled` / AHCI mode)
 * **Enable:**
   * VT-x (Intel Virtualization Technology)
   * Above 4G Decoding (if available)
@@ -186,7 +186,7 @@ Restart your laptop and press **F2** to enter BIOS Setup. Set the following opti
 
 Use **[GenSMBIOS](https://github.com/corpnewt/GenSMBIOS)** to generate values for **MacBookPro16,2**:
 * Open your `config.plist` in **ProperTree** or **OpenCore Configurator**.
-* Navigate to `PlatformInfo` $ightarrow$ `Generic`.
+* Navigate to `PlatformInfo` → `Generic`.
 * Fill in:
   * `SystemSerialNumber`
   * `MLB` (Board Serial)
