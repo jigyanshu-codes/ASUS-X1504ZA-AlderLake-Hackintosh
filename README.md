@@ -1,18 +1,18 @@
 # ASUS Vivobook 15 (X1504ZA) — Complete macOS OpenCore Guide & EFI
 
-[![macOS](https://img.shields.io/badge/macOS-Tahoe%2026.x%20%7C%20Sonoma%2014.x%20%7C%20Sequoia%2015.x-blue?style=for-the-badge&logo=apple)](https://www.apple.com/macos)
-[![OpenCore](https://img.shields.io/badge/OpenCore-1.0.8%20%2F%201.0.9-green?style=for-the-badge&logo=codefactor)](https://github.com/acidanthera/OpenCorePkg)
+[![macOS](https://img.shields.io/badge/macOS-Tahoe%2026.7.2%20%7C%20Sonoma%2014.x%20%7C%20Sequoia%2015.x-blue?style=for-the-badge&logo=apple)](https://www.apple.com/macos)
+[![OpenCore](https://img.shields.io/badge/OpenCore-1.0.8-green?style=for-the-badge&logo=codefactor)](https://github.com/acidanthera/OpenCorePkg)
 [![Intel](https://img.shields.io/badge/CPU-Intel%20Core%20i5--1235U%20(Alder%20Lake)-0071C5?style=for-the-badge&logo=intel)](https://www.intel.com)
 [![Graphics](https://img.shields.io/badge/GPU-Intel%20Iris%20Xe%201536MB%20Metal%202-orange?style=for-the-badge&logo=intel)](https://www.intel.com)
-[![Maintenance](https://img.shields.io/badge/Status-Actively%20Maintained-brightgreen?style=for-the-badge)](https://github.com)
+[![Bluetooth](https://img.shields.io/badge/Bluetooth-MT7902%20Working-0082FC?style=for-the-badge&logo=bluetooth)](https://github.com/jigyanshu-codes/SimpleMtkBtFw/releases/tag/v1.1.1)
+[![Audio](https://img.shields.io/badge/Audio-ALC256%20%2B%20USB%20%2B%20BT-success?style=for-the-badge)](#2-glitch-free-audio-internal-speakers-usb-dac--bluetooth)
 
-A fully tested, meticulously documented OpenCore EFI and installation guide for running macOS (**macOS Tahoe 26.7.2**, **macOS Sonoma**, and **macOS Sequoia**) on the **ASUS Vivobook 15 (X1504ZA / Vivobook_ASUSLaptop X1504ZA_X1504ZA)** with **Intel 12th Gen Alder Lake Core i5-1235U** and **Intel Iris Xe Graphics**.
+A verified, actively maintained OpenCore `1.0.8` EFI and technical guide for running **macOS Tahoe (`26.7.2`)**, Sequoia, and Sonoma on the **ASUS Vivobook 15 (`X1504ZA` / `Vivobook_ASUSLaptop X1504ZA_X1504ZA`)** with **12th Gen Intel Core i5-1235U** and **Intel Iris Xe Graphics**.
 
 > [!NOTE]
-> **A Message From The Author:**
-> Getting modern Alder Lake (12th Gen) Intel laptops with Iris Xe graphics and I2C precision trackpads working smoothly on macOS has historically been considered nearly impossible by the Hackintosh community. This repository represents days and weeks of deep debugging, reverse engineering, binary patching, and ACPI table analysis to make it a reality.
->
-> **I will NOT drop or abandon this project until every single fixable component is 100% operational.** This repository is under active progress, and updates will be pushed regularly as new breakthroughs occur!
+> **Project Status (Nov 2026 Breakthrough):**
+> **Iris Xe 1536 MB Metal 2 acceleration, Internal Speakers + 3.5 mm Headphone Jack (`AppleALC` + `SimpleHDA`), USB DAC audio, MediaTek MT7902 Bluetooth + BT audio, I2C Trackpad, Display Backlight, Battery, and Custom USB Port Mapping are all verified working together on macOS Tahoe 26.7.2!**
+> Native PCIe Wi-Fi (`MediaTek MT7902`) remains under active driver development ([SimpleMtkWlan](https://github.com/jigyanshu-codes/SimpleMtkWlan)), with iPhone/Android USB Tethering working out of the box.
 
 ---
 
@@ -28,205 +28,123 @@ A fully tested, meticulously documented OpenCore EFI and installation guide for 
 
 ---
 
-## Hardware Specifications
+## Hardware Specifications & Compatibility
 
 | Component | Hardware Details | Status | Notes |
 | :--- | :--- | :---: | :--- |
 | **Model** | ASUS Vivobook 15 `X1504ZA` / `Vivobook_ASUSLaptop X1504ZA_X1504ZA` | `Supported` | Motherboard ID: `X1504ZA` |
-| **Processor** | Intel Core i5-1235U (10 Cores: 2P + 8E, 12 Threads, up to 4.40 GHz) | `Working` | Managed via `CpuTopologyRebuild` + `CpuTscSync` |
-| **Integrated GPU** | Intel Iris Xe Graphics GT2 (`0x46A8` / Alder Lake-UP3 GT2) | `Working` | 1536 MB VRAM, Metal 2, Full QE/CI acceleration |
-| **RAM** | 20 GB DDR4 3200 MHz (4 GB Onboard + 16 GB SO-DIMM) | `Working` | Dual-Channel enabled |
-| **Storage** | 512 GB Samsung PM9B1 NVMe SSD (`MZVL4512HBLU-00B00`) | `Working` | Managed via `NVMeFix.kext` |
-| **Display** | 15.6" Full HD (1920x1080) 60Hz 16:9 Slim-Bezel Display | `Working` | Native brightness slider in Control Center |
-| **Trackpad** | ASUS Precision Touchpad `ASUP1200` (`ACPI\VEN_ASUP&DEV_1200` on I2C1 `00:15.1`) | `Partial` | Smooth cursor & clicks in polling mode (`-vi2c-force-polling`) |
-| **Keyboard** | ASUS I8042 PS/2 Keyboard with Brightness/Fn Keys | `Working` | Managed via `VoodooPS2Controller` + `BrightnessKeys` |
-| **Audio** | Realtek ALC256 via Intel Smart Sound Technology (`8086:51C8`) | `Limitation` | Intel cDSP hardware limitation; USB/DAC audio works out of the box |
-| **Wi-Fi** | MediaTek Wi-Fi 6 MT7902 M.2 PCIe Card | `Unsupported` | Hardware limitation: No macOS driver exists in the ecosystem |
-| **Bluetooth** | MediaTek Bluetooth Adapter (USB `0x13d3:0x3568`) | `Detected` | Detected; external dongle recommended for full AirDrop support |
-| **Webcam** | USB2.0 HD UVC WebCam (`0x04f2:0xb797`) | `Working` | Works natively out of the box |
-| **Ports** | 1x USB-C 3.2 Gen 1, 2x USB-A 3.2 Gen 1, 1x USB-A 2.0, 1x HDMI 1.4 | `Working` | Custom mapped via `UTBDefault.kext` |
-| **Battery / Power** | 3-Cell 42Wh Lithium-ion Battery with 65W AC Adapter | `Working` | Accurate percentage and charging state via `AsusSMC` |
+| **Processor** | Intel Core i5-1235U (10 Cores: 2P + 8E, Alder Lake-U) | `Working` | Native BIOS 10-thread topology + `CpuTscSync` (`TSC_sync_margin=0 -cputsclock`); `CpuTopologyRebuild` disabled |
+| **Integrated GPU** | Intel Iris Xe Graphics GT2 (`8086:46A8`) | `Working` | 1536 MB VRAM, Metal 2, Full QE/CI via `WhateverXe v0.7.0` |
+| **RAM** | 20 GB DDR4 3200 MHz (4 GB Onboard + 16 GB SO-DIMM) | `Working` | Dual-Channel |
+| **Storage** | 512 GB Samsung PM9B1 NVMe SSD (`MZVL4512HBLU-00BTW`) | `Working` | Managed via `NVMeFix.kext v1.1.4` |
+| **Display** | 15.6" Full HD (1920x1080) 60Hz eDP Panel | `Working` | Native brightness slider & Fn hotkeys |
+| **Trackpad** | ASUS Precision Touchpad `ASUP1200` (`INTC1055` on I2C1 `00:15.1`) | `Working (Polling)` | Smooth cursor & clicks via `VoodooI2C v2.9.1` + `VoodooI2CHID` (`-vi2c-force-polling`) |
+| **Keyboard** | ASUS I8042 PS/2 Keyboard | `Working` | `VoodooPS2Controller v2.3.8` + `BrightnessKeys v1.0.4` + `AsusSMC v1.4.1` |
+| **Audio (Internal)** | Realtek ALC256 (`10EC:0256`) on Intel `8086:51C8` | `Working` | Speakers & 3.5 mm jack via `AppleALC v1.9.8` + `SimpleHDA v1.0.1` (`alcid=41`, in-RAM via Lilu) |
+| **Audio (External)** | USB-C / USB-A DACs & Bluetooth Audio Devices | `Working` | `0` CoreAudio deadlines missed / `0` overloads (`AppleUSBAudio` + `SimpleMtkBtPatcher`) |
+| **Bluetooth** | MediaTek MT7902 USB Bluetooth (AzureWave `13d3:3579`) | `Working` | Scanning, pairing, mic input & A2DP audio via [SimpleMtkBtFw v1.1.1](https://github.com/jigyanshu-codes/SimpleMtkBtFw/releases/tag/v1.1.1) |
+| **Wi-Fi** | MediaTek Wi-Fi 6 MT7902 M.2 PCIe (`14C3:7902`) | `In Progress` | Driver under development ([SimpleMtkWlan](https://github.com/jigyanshu-codes/SimpleMtkWlan)); USB Tethering works out of the box |
+| **Webcam** | ShineTech `USB2.0 HD UVC WebCam` (USB port `HS09`) | `Working` | Native plug-and-play |
+| **USB Ports** | USB-C, USB-A 3.2, USB-A 2.0 + internal BT (`HS10`) & Cam (`HS09`) | `Working` | Custom 10-port `UTBMap.kext` + `USBToolBox v1.2.0` + `XHCI-unsupported v0.9.2` |
+| **Battery / Power** | ASUS Battery & Power Telemetry | `Working` | Accurate readout & AC state via `SMCBatteryManager` + `AsusSMC` |
 
 ---
 
-## Feature Status & Hardware Support Matrix
+## Key Technical Breakthroughs & Fixes
 
-### Verified Operational Features
-* **Intel Iris Xe Full Graphics Acceleration:**
-  * **1536 MB VRAM** smoothly allocated.
-  * **Metal 2 Acceleration** active (`Intel(R) TGL Unknown` Metal device).
-  * **Quartz Extreme & Core Image (QE/CI)** fully working (smooth Dock animations, Mission Control, Launchpad, transparent UI).
-  * **VDA Hardware Video Decoder:** Fully Supported (H.264/HEVC hardware playback).
-  * WebGPU and WebGL 2 running fluidly at 60 FPS in Safari and Chrome.
-* **Native Display Backlight Control:**
-  * Native brightness slider integrated right into macOS Control Center and System Settings.
-  * Function keys (Fn + F4/F5) dynamically adjust backlight smoothly without flickering.
-* **Trackpad (`ASUP1200`):**
-  * Smooth cursor tracking, left-click, right-click, and mechanical physical click working cleanly using customized `VoodooI2C` and `VoodooI2CHID` in polling mode.
-* **Keyboard & Special Keys:**
-  * Built-in keyboard operates with zero key drops or delays.
-  * Brightness keys, volume keys, and media controls respond natively.
-* **Power Management & Thermal Regulation:**
-  * Hybrid 2 Performance + 8 Efficiency cores managed efficiently via `CpuTopologyRebuild.kext`.
-  * Dynamic clock scaling and native C-states configured via `SSDT-PLUG-ALT.aml`.
-  * Fan curves and battery readouts accurately tracked via `VirtualSMC.kext` and `AsusSMC.kext`.
-* **High-Speed Storage:**
-  * Samsung PM9B1 NVMe SSD runs with full TRIM support and APFS compatibility via `NVMeFix.kext`.
-* **Native Apple Services (iCloud, App Store, iMessage):**
-  * Built-in dummy Ethernet interface (`SSDT-RMNE.aml` + `NullEthernet.kext`) provides `en0` with `Built-In` flag enabled, allowing full Apple ID login, App Store downloads, and iCloud synchronization.
+### 1. Intel Iris Xe 1536 MB Metal 2 (`WhateverXe v0.7.0`)
+Alder Lake-U integrated graphics (`8086:46A8`) require `WhateverXe.kext v0.7.0` paired with `WhateverXe-Graphics-0.4.0.pkg` in `/Library/Extensions` compiled into `AuxiliaryKernelExtensions.kc`:
+* **Hardware Acceleration:** 1536 MB VRAM allocated, full Metal 2 (`QE/CI`) UI rendering, WebGL/WebGPU acceleration, and hardware video decode.
+* **Native Display Backlight:** `SSDT-PNLF.aml` (`PNLF` → `XNLF` rename) + `AsusSMC.kext` + `BrightnessKeys.kext` provide full macOS Control Center slider and keyboard brightness control.
+* **Strict Dependency Load Order:** `Lilu.kext` (`1.7.3`) → `AppleALC.kext` (`1.9.8`) → `SimpleHDA.kext` (`1.0.1`) → `AMFIPass.kext` (`1.4.1`) → `WhateverXe.kext` (`0.7.0`).
 
----
+### 2. Glitch-Free Audio: Internal Speakers, USB DAC & Bluetooth
+Earlier builds suffered severe CoreAudio stalls (~2 seconds of clean playback followed by crackling, cutouts, `273–330 ms` `scheduler_latency`, `Deadline is prior to Start time`, `Audio IO Overload`, and `0xE00002EE` `kIOReturnIsoTooOld` kernel errors) across **all** audio devices — Internal Speakers, Headphones, USB DACs, and Bluetooth.
 
-### Work In Progress & Known Hardware Limitations
+#### A. Root Cause & CPU/TSC Fix
+* Firmware on the X1504ZA boots with 10 threads exposed (`MP services threads 10 (enabled 10)`).
+* Running `CpuTopologyRebuild.kext` (`ctrsmt=off`) together with OpenCore's `force HT enabled` kernel patches created a mismatched topology in XNU (`10` physical vs forced logical expectations), causing CoreAudio's real-time workgroups to wake hundreds of milliseconds past deadlines.
+* **Solution in `config.plist`:**
+  * Disabled `CpuTopologyRebuild.kext` and all 3 `force HT enabled` kernel patches (`Enabled = False`), keeping `Kernel -> Quirks -> ProvideCurrentCpuInfo = True`.
+  * Enabled `CpuTscSync.kext` (`v1.1.3`) with `TSC_sync_margin=0 -cputsclock` in `boot-args`.
+* **Verified Diagnostic Result (`audio_diag_report-6.txt`):** `Deadline prior to Start time: 0`, `Audio IO Overload: 0`, `Safety Violations: 0`, `PLAYBACK_TIME_MS: 1466.51 ms`.
 
-#### 1. Audio: Realtek ALC256 via Intel Smart Sound Technology (`8086:51C8`)
-* **The Root Cause:**
-  Unlike older Intel generations where audio codecs are wired to a standard legacy Intel HD Audio controller (`HDEF`), 12th Gen Alder Lake routes the Realtek ALC256 codec strictly through the proprietary **Intel Smart Sound Technology (SST) cDSP** (`PCI\VEN_8086&DEV_51C8`).
-* **Why AppleALC Fails Silently:**
-  `AppleALC.kext` expects standard HD Audio bus commands (`HDAController`). Because the SST firmware blocks direct HDA register writes without proprietary Intel IPC blobs, AppleALC probe loops time out (`AppleHDAController::probe failed`).
-* **Why HDAUniversal Breaks Graphics:**
-  Third-party drivers like `HDAUniversal.kext` hook the shared `8086:51C8` PCI controller, conflicting with the Iris Xe display audio/power pipeline. This trips the WhateverXe handoff check and throws macOS into unaccelerated 7 MB VESA mode.
-* **The Instant, Recommended Workaround:**
-  * **USB-C / USB-A to 3.5mm DAC Adapter:** Plugging in any standard USB audio dongle or Apple's USB-C Headphone Adapter works **instantly out of the box** with macOS native `AppleUSBAudio`! Both crystal-clear stereo audio and microphone input work flawlessly.
-  * **Bluetooth Audio:** Connecting Bluetooth speakers or headphones provides high-quality wireless sound.
+#### B. Internal Speakers & 3.5 mm Jack on macOS Tahoe (`AppleALC` + `SimpleHDA`)
+* Because Apple removed `AppleHDA.kext` starting in macOS Tahoe, [`SimpleHDA.kext`](https://github.com/laobamac/SimpleHDA) (`v1.0.1`) injects and restores the AppleHDA stack **strictly in RAM via OpenCore & Lilu** (`DisableLinkeditJettison = True`).
+* **Why This Never Breaks Iris Xe Graphics:** Unlike legacy `HDAUniversal.kext` or `VoodooHDA.kext` installed to `/Library/Extensions` (which trigger `kmutil` rebuilds and hijack `8086:51C8`), `SimpleHDA.kext` writes nothing to macOS's disk or `AuxKC`.
+* **Audio Properties:**
+  * `DeviceProperties -> Add -> PciRoot(0x0)/Pci(0x1f,0x3)`: `layout-id` = `<29000000>` (`41`)
+  * `boot-args`: `alcid=41 shda-lang=en` (adds clean English device labels)
+* **Usage Note (`alcid=41`):** In **System Settings → Sound → Output**, `alcid=41` lists **`Built-in Speaker`** and **`Built-in Headphone`** as separate output entries. Select `Built-in Speaker` for internal speakers, or `Built-in Headphone` when using the 3.5 mm jack. *(If you prefer automatic jack switching on a single `Built-in Output` device, you can test changing `alcid=41` to `alcid=13` in `boot-args`.)*
 
-#### 2. Wi-Fi: MediaTek MT7902 M.2 Card
-* **The Limitation:**
-  The factory Wi-Fi card in this laptop is a **MediaTek MT7902**.
-* **Driver Ecosystem:**
-  The open-source Hackintosh community currently has drivers for Intel Wi-Fi (`AirportItlwm`) and select Broadcom cards (`OpenCore-Legacy-Patcher`), but **no macOS kernel driver exists for the MediaTek MT7902 chipset**.
-* **Clean Solutions:**
-  * **Instant Solution (Zero Cost):** Plug in your iPhone or Android phone via USB cable and enable **Personal Hotspot (USB Tethering)**. macOS recognizes it natively as a 1000 Mbps high-speed network interface (`en1`/`en2`) with zero configuration required!
-  * **Hardware Upgrade (\$15-20):** Replace the M.2 2230 Wi-Fi card with an **Intel AX200 / AX201 / AX210** (which works with `AirportItlwm` for native macOS Wi-Fi) or a Broadcom **BCM94360NG** for native AirDrop and Continuity.
+### 3. MediaTek MT7902 Bluetooth (`13d3:3579`)
+MediaTek MT7902 USB Bluetooth works natively with Bluetooth audio output, mic input, scanning, and pairing:
+* **Kexts (`Kernel -> Add` order):** `BlueToolFixup.kext` (`2.7.2`) → `SimpleMtkBtFw.kext` (`1.1.1`) → `SimpleMtkBtPatcher.kext` (`1.1.1`) Mod from [SimpleMtkBtFw v1.1.1](https://github.com/jigyanshu-codes/SimpleMtkBtFw/releases/tag/v1.1.1).
+* **NVRAM (`7C436110-AB2A-4BBB-A880-FE41995C9F82`):** `bluetoothInternalControllerInfo` (`14` zero bytes) and `bluetoothExternalDongleFailed` (`00`) present in both `Add` and `Delete`.
+* **Boot Flags:** `-btlfxboardid -btlfxallowanyaddr` in `boot-args`.
+
+### 4. Wi-Fi Workaround (MT7902 PCIe `14C3:7902`)
+* The internal **MediaTek MT7902 PCIe Wi-Fi** card is disabled cleanly in ACPI (`SSDT-Disable_Network_RP07.aml`) while the open-source macOS driver is being developed at [SimpleMtkWlan](https://github.com/jigyanshu-codes/SimpleMtkWlan).
+* **Zero-Cost Daily Option:** iPhone or Android **USB Tethering** works immediately out of the box (pair with [`Utilities/fix_tethering.sh`](Utilities/fix_tethering.sh) if hotspot drops on phone lock).
+* **Hardware Upgrade Option:** Swapping the M.2 2230 card to an Intel `AX200 / AX201 / AX210` (`AirportItlwm`/`itlwm`) or Broadcom `BCM94360NG` enables onboard Wi-Fi.
 
 ---
 
-## Technical Architecture & Driver Patches
+## Post-Installation: Intel Iris Xe 1536 MB Acceleration Restorer
 
-### 1. The Alder Lake-U Iris Xe Breakthrough
-Alder Lake-U integrated graphics (`8086:46A8`) previously failed to initialize on macOS due to a strict internal port handoff requirement in WhateverXe:
-1. **eDP Boot Handoff Bypass (Offset `0x56b63`):**
-   * WhateverXe originally required the internal laptop screen (DDI 0) to report software mode `1`.
-   * On 12th Gen Alder Lake-U laptops, firmware initialization leaves the panel in mode `0`.
-   * **The Fix:** Binary instruction patched from `jb 0x56b77` (`72 12`) to `jb 0x56b7b` (`72 16`), cleanly accepting both mode 0 and mode 1 and eliminating the line 8506 handoff fault.
-2. **Panel Timing Calibration (Offset `0xa2e1c`):**
-   * Patched `jne 0xa2d85` (`0f 85`) to `ja 0xa2d85` (`0f 87`), allowing native panel timing calculation for internal laptop panels.
-3. **Internal Backlight PWM Target (Offset `0xa3297`):**
-   * Patched `jne 0xa3250` (`75 b7`) to `ja 0xa3250` (`77 b7`), unlocking hardware backlight PWM scaling.
-4. **Strict Kext Load Order:**
-   * OpenCore strictly loads in Dortania dependency sequence:
-     `Lilu.kext` → `AMFIPass.kext` → `WhateverXe.kext` → `VirtualSMC.kext`.
+After installing macOS (or if macOS ever falls back to **Intel Iris Xe Graphics 7 MB** VESA mode), run our automated script to install/rebuild `WhateverXe-Graphics-0.4.0` into `AuxiliaryKernelExtensions.kc`:
 
----
-
-## Post-Installation: Intel Iris Xe 1536MB Acceleration Restorer
-
-If your system ever boots into unaccelerated **"Intel Iris Xe Graphics 7 MB"** (VESA mode), you can restore full 1536 MB Metal 2 acceleration in under 60 seconds using our dedicated automated tool.
-
-### Running the Acceleration Restorer
-Open **Terminal** in macOS and execute:
 ```bash
 sudo ./Utilities/activate_acceleration.sh
 ```
-*(Or simply double-click [`Utilities/Restore_1536MB_Acceleration.command`](Utilities/Restore_1536MB_Acceleration.command) in Finder).*
+*(Or double-click [`Utilities/Restore_1536MB_Acceleration.command`](Utilities/Restore_1536MB_Acceleration.command) in Finder.)*
 
-### What the Script Automates:
-1. **Conflict Purge:** Removes conflicting audio kexts (`HDAUniversal.kext`, `VoodooHDA.kext`) that cause display engine arbitration panics.
-2. **Staging Cache Cleanup:** Executes `kmutil clear-staging` to prevent macOS from loading quarantined or orphaned drivers.
-3. **Driver Deployment:** Checks for `WhateverXe-Graphics-0.4.0.pkg`, automatically downloading it from GitHub releases if missing, and validates `/Library/Extensions/AppleIntelTGL*` and `/Library/GPUBundles`.
-4. **Permission & Quarantine Sanitization:** Enforces `root:wheel 755` permissions and strips quarantine attributes (`xattr -cr`).
-5. **Metal Optimization:** Sets `AllowOnePassMetalScaling:Enabled = false` in `CoreMedia.plist` to prevent video scaling glitches.
-6. **AuxKC Direct Compilation:** Builds `/Library/KernelCollections/AuxiliaryKernelExtensions.kc` using `kmutil create -n aux` with `--allow-missing-kdk` and `--no-authentication`.
+### What `activate_acceleration.sh` Automates
+1. Purges any conflicting `/Library/Extensions` audio kexts (`HDAUniversal.kext`, `VoodooHDA.kext`, `AppleHDADisabler.kext`).
+2. Clears macOS extension staging (`kmutil clear-staging`).
+3. Locates or downloads `WhateverXe-Graphics-0.4.0.pkg` and validates `/Library/Extensions/AppleIntelTGL*` + `/Library/GPUBundles`.
+4. Enforces `root:wheel` `755` permissions, clears quarantine attributes (`xattr -cr`), and disables `AllowOnePassMetalScaling` in `CoreMedia.plist`.
+5. Builds `/Library/KernelCollections/AuxiliaryKernelExtensions.kc` via `kmutil create -n aux --allow-missing-kdk --no-authentication`.
 
 > [!CAUTION]
 > ### CRITICAL: Avoid The "System Settings Trap"
-> When the script completes, macOS may display a notification saying:
-> *"System Extension Blocked"* or prompt you to approve extensions in **System Settings -> Privacy & Security**.
+> When `activate_acceleration.sh` completes, macOS may show *"System Extension Blocked"*.
 >
-> 1. **DO NOT OPEN SYSTEM SETTINGS!**
-> 2. **DO NOT CLICK 'ALLOW' OR 'RESTART' INSIDE SYSTEM SETTINGS!**
+> 1. **DO NOT open System Settings → Privacy & Security!**
+> 2. **DO NOT click 'Allow' or 'Restart' inside System Settings!**
 >
-> **Why?**
-> Clicking "Restart" inside System Settings triggers macOS's native `syspolicyd` daemon to run Apple's internal `kmutil rebuild` **without** `--allow-missing-kdk`. This silently purges the unsigned Iris Xe graphics drivers from the kernel collection and throws macOS right back into the unaccelerated 7 MB VESA fallback!
+> Clicking Restart inside System Settings runs macOS's `kmutil rebuild` **without** `--allow-missing-kdk`, wiping your Iris Xe drivers back to 7 MB VESA mode.
 >
-> **The Safe Reboot Procedure:**
-> 1. Press **[Enter]** directly inside the Terminal window to reboot.
-> 2. In the OpenCore Boot Picker, press **Spacebar** and select **Reset NVRAM** once.
-> 3. Boot into macOS, and enjoy full **Intel Iris Xe 1536 MB Metal 2 acceleration**!
+> **Safe Reboot:** Press **`[Enter]`** directly in the Terminal script prompt → press **Spacebar → Reset NVRAM** once at the OpenCore picker → boot macOS normally.
 
 ---
 
 ## Installation & Setup Guide
 
-### Prerequisites
-* A USB flash drive (16 GB or larger).
-* macOS installer image (macOS Tahoe 26.x, macOS Sequoia 15.x, or macOS Sonoma 14.x).
-* Windows 11 / Linux or an existing Mac to create the bootable drive.
+### 1. BIOS Settings (F2)
+* **Disable:** Secure Boot, Fast Boot, Intel VMD / RAID (`VMD Configuration` → `Disabled` / AHCI).
+* **Enable:** Intel Virtualization Technology (`VT-x`).
 
-### Step-by-Step Installation
-
-#### 1. BIOS Settings
-Restart your laptop and press **F2** to enter BIOS Setup. Set the following options:
-* **Disable:**
-  * Secure Boot (`Security` → `Secure Boot` → `Disabled`)
-  * Fast Boot (`Boot` → `Fast Boot` → `Disabled`)
-  * Intel VMD / RAID (`Advanced` → `VMD Configuration` → `Disabled` / AHCI mode)
-* **Enable:**
-  * VT-x (Intel Virtualization Technology)
-  * Above 4G Decoding (if available)
-
-#### 2. Prepare USB Installer
-1. Create a standard bootable macOS USB installer using standard tools (such as `createinstallmedia` or gibMacOS).
-2. Mount the **EFI partition** of your bootable USB.
-3. Copy the `EFI` folder from this repository directly into the root of your USB's EFI partition.
-
-#### 3. Generate Unique SMBIOS Data
+### 2. Generate Unique SMBIOS Before Booting (`MacBookPro16,2`)
 > [!IMPORTANT]
-> The `config.plist` in this repository contains sanitized placeholder serial numbers (`C02000000000`). You **MUST** generate your own unique serials before logging into Apple ID / iCloud!
+> The [`EFI/OC/config.plist`](EFI/OC/config.plist) in this repository contains sanitized placeholder serial numbers (`C02000000000`). Generate your own unique SMBIOS values before signing into Apple ID / iCloud!
 
-Use **[GenSMBIOS](https://github.com/corpnewt/GenSMBIOS)** to generate values for **MacBookPro16,2**:
-* Open your `config.plist` in **ProperTree** or **OpenCore Configurator**.
-* Navigate to `PlatformInfo` → `Generic`.
-* Fill in:
-  * `SystemSerialNumber`
-  * `MLB` (Board Serial)
-  * `SystemUUID` (SmUUID)
-* Save `config.plist`.
+Use **[GenSMBIOS](https://github.com/corpnewt/GenSMBIOS)** for **`MacBookPro16,2`** (see [`Utilities/generate_smbios.md`](Utilities/generate_smbios.md)) and update `PlatformInfo -> Generic` (`SystemSerialNumber`, `MLB`, `SystemUUID`, `ROM`) in ProperTree.
 
-#### 4. Boot & Install
-1. Insert the USB drive and power on your laptop while pressing **Esc** to enter the boot menu.
-2. Select your USB drive (UEFI Partition).
-3. At the OpenCore boot picker:
-   * **First-time boot:** Press **Spacebar** to reveal tools and select **Reset NVRAM**.
-   * Then select **Install macOS** (or your macOS target partition).
-4. Follow the macOS installer prompts to format your internal SSD partition as **APFS** (GUID Partition Map) and complete the installation.
+### 3. Deploy to USB & Boot
+1. Copy the [`EFI/`](EFI/) folder from this repository to the root of your FAT32 EFI partition (test on a USB drive first before touching your internal SSD!).
+2. **Never delete or overwrite `EFI/Microsoft` on your internal NVMe SSD** when dual-booting Windows.
+3. Boot via **Esc** → select USB UEFI → press **Spacebar → Reset NVRAM** on first boot → boot macOS.
 
 ---
 
-## Post-Installation & Troubleshooting Utilities
+## Post-Installation Utilities
 
-We have bundled helpful post-install scripts inside the [`Utilities`](Utilities/) folder:
-
-### 1. Graphics Acceleration Restorer
-Restores full 1536 MB Metal 2 acceleration if the system ever reverts to 7 MB VESA:
-```bash
-sudo ./Utilities/activate_acceleration.sh
-```
-
-### 2. iPhone USB Tethering Drop Fix
-If your iPhone personal hotspot connection ever stalls or drops when your phone screen turns off, simply run:
-```bash
-chmod +x Utilities/fix_tethering.sh
-./Utilities/fix_tethering.sh
-```
-*This cleanly cycles `usbmuxd` and restarts the network interface without requiring a computer restart.*
-
-### 3. Optimal Power & Sleep Management
-To prevent macOS from prematurely suspending USB ports:
-```bash
-chmod +x Utilities/optimize_power.sh
-./Utilities/optimize_power.sh
-```
+Bundled in [`Utilities/`](Utilities/) (all Unix LF line endings):
+* [`activate_acceleration.sh`](Utilities/activate_acceleration.sh) & [`Restore_1536MB_Acceleration.command`](Utilities/Restore_1536MB_Acceleration.command) — Installs/restores 1536 MB Iris Xe Metal 2 `AuxKC` cleanly.
+* [`fix_tethering.sh`](Utilities/fix_tethering.sh) — Restarts `usbmuxd` and cycles the iPhone USB Ethernet interface without rebooting.
+* [`optimize_power.sh`](Utilities/optimize_power.sh) — Configures `pmset` (disables hibernation/sleepimage to keep USB peripherals stable).
+* [`generate_smbios.md`](Utilities/generate_smbios.md) — Step-by-step GenSMBIOS guide for `MacBookPro16,2`.
 
 ---
 
@@ -235,61 +153,72 @@ chmod +x Utilities/optimize_power.sh
 ```text
 ├── EFI/
 │   ├── BOOT/
-│   │   └── BOOTx64.efi                 # OpenCore Bootloader Binary
+│   │   └── BOOTx64.efi                         # OpenCore 1.0.8 UEFI Bootloader
 │   └── OC/
-│       ├── ACPI/                       # Compiled Hotpatches & Patched DSDT
-│       │   ├── DSDT.aml                # Patched DSDT (GPI0 INTC1055, SSCN/FMCN timing)
-│       │   ├── SSDT-ALS0.aml           # Ambient Light Sensor Dummy
-│       │   ├── SSDT-EC.aml             # Embedded Controller Hotpatch
-│       │   ├── SSDT-PLUG-ALT.aml       # Alder Lake CPU Power Management
-│       │   ├── SSDT-PNLF.aml           # Native Backlight & Brightness Slider
-│       │   ├── SSDT-RMNE.aml           # NullEthernet Fake en0 for Mac App Store
-│       │   ├── SSDT-USBX.aml           # USB Power Delivery Properties
-│       │   └── SSDT-XOSI.aml           # Windows 11 ACPI OS Simulation
-│       ├── Kexts/                      # Kernel Extensions
-│       │   ├── Lilu.kext               # Base Kernel Patcher
-│       │   ├── AMFIPass.kext           # AMFI Signature Enabler
-│       │   ├── WhateverXe.kext         # Patched Iris Xe Metal Graphics Driver
-│       │   ├── VirtualSMC.kext         # SMC Emulator
-│       │   ├── AsusSMC.kext            # ASUS Laptop Fn Keys & Fan Controls
-│       │   ├── BrightnessKeys.kext     # Native Brightness Hotkeys
-│       │   ├── CpuTopologyRebuild.kext # Alder Lake 2P+8E Hybrid Core Manager
-│       │   ├── CpuTscSync.kext         # TSC Sync Across All Cores
-│       │   ├── NVMeFix.kext            # NVMe Power Management
-│       │   ├── NullEthernet.kext       # iCloud / App Store en0 Support
-│       │   ├── SMCBatteryManager.kext  # Battery State Engine
-│       │   ├── USBToolBox.kext         # USB Bus Controller
-│       │   ├── UTBDefault.kext         # USB Port Map
-│       │   ├── VoodooI2C.kext          # I2C Serial Bus Engine (Patched Alder Lake)
-│       │   ├── VoodooI2CHID.kext       # Precision Touchpad Driver
-│       │   └── VoodooPS2Controller.kext# PS/2 Keyboard Driver
-│       ├── Drivers/                    # UEFI Drivers (OpenRuntime, HfsPlus, ResetNvram)
-│       ├── Resources/                  # High-Resolution Audio/Graphic Assets
-│       └── config.plist                # Fully Validated OpenCore 1.0.8 Configuration
-├── Screenshots/                        # Verified Operation Proof Images
-├── Utilities/                          # Helpful Helper Scripts
-│   ├── activate_acceleration.sh        # Dedicated 1536MB Acceleration Restorer
-│   ├── Restore_1536MB_Acceleration.command # Clickable macOS Automation Tool
-│   ├── fix_tethering.sh                # USB Tethering Recovery Script
-│   ├── optimize_power.sh               # Sleep & Power Config Script
-│   └── generate_smbios.md              # SMBIOS Generator Walkthrough
-└── README.md                           # Master Documentation
+│       ├── ACPI/
+│       │   ├── DSDT.aml                        # Patched DSDT (GPI0 INTC1055, I2C timings)
+│       │   ├── SSDT-ALS0.aml                   # Ambient Light Sensor dummy
+│       │   ├── SSDT-Disable_Network_RP07.aml   # Disables unsupported MT7902 PCIe Wi-Fi slot
+│       │   ├── SSDT-EC.aml                     # Embedded Controller fix
+│       │   ├── SSDT-GPI0.aml                   # GPIO controller enablement
+│       │   ├── SSDT-HPET.aml                   # Included (Disabled in config.plist)
+│       │   ├── SSDT-MCHC.aml                   # SMBus / Memory controller
+│       │   ├── SSDT-PLUG-ALT.aml               # Alder Lake CPU power management
+│       │   ├── SSDT-PNLF.aml                   # Internal eDP backlight control
+│       │   ├── SSDT-RMNE.aml                   # NullEthernet built-in en0
+│       │   ├── SSDT-RTCAWAC.aml                # System clock (AWAC/RTC) fix
+│       │   ├── SSDT-SBUS.aml                   # SMBus device properties
+│       │   ├── SSDT-USB-Reset.aml              # RHUB USB reset
+│       │   ├── SSDT-USBX.aml                   # USB power properties
+│       │   └── SSDT-XOSI.aml                   # _OSI Windows simulation
+│       ├── Drivers/                            # OpenRuntime, HfsPlus, ResetNvramEntry, OpenCanopy
+│       ├── Kexts/
+│       │   ├── Lilu.kext                       # v1.7.3 — Base kernel patcher
+│       │   ├── AppleALC.kext                   # v1.9.8 — Realtek ALC256 codec (alcid=41)
+│       │   ├── SimpleHDA.kext                  # v1.0.1 — In-RAM AppleHDA restoration on Tahoe
+│       │   ├── AMFIPass.kext                   # v1.4.1 — AMFI compatibility for WhateverXe
+│       │   ├── WhateverXe.kext                 # v0.7.0 — Patched Iris Xe Metal 2 driver
+│       │   ├── BlueToolFixup.kext              # v2.7.2 — macOS Bluetooth stack fixup
+│       │   ├── SimpleMtkBtFw.kext              # v1.1.1 — MediaTek MT7902 firmware loader
+│       │   ├── SimpleMtkBtPatcher.kext         # v1.1.1 — MediaTek Bluetoothd/Audio patcher
+│       │   ├── VirtualSMC.kext                 # v1.3.9 — SMC emulator
+│       │   ├── AsusSMC.kext                    # v1.4.1 — ASUS laptop Fn & fan controls
+│       │   ├── SMCBatteryManager.kext          # v1.3.9 — Battery telemetry
+│       │   ├── BrightnessKeys.kext             # v1.0.4 — Native brightness hotkeys
+│       │   ├── CpuTscSync.kext                 # v1.1.3 — TSC sync across P/E cores
+│       │   ├── CpuTopologyRebuild.kext         # Disabled in config.plist (see Audio Fix)
+│       │   ├── NVMeFix.kext                    # v1.1.4 — NVMe power management
+│       │   ├── NullEthernet.kext               # v1.0.6 — Built-in en0 for Apple services
+│       │   ├── RestrictEvents.kext             # v1.1.7 — Platform/CPU restriction patches
+│       │   ├── USBToolBox.kext                 # v1.2.0 — Custom USB mapping engine
+│       │   ├── UTBMap.kext                     # v1.0 — X1504ZA 10-port USB map (UTBDefault disabled)
+│       │   ├── VoodooI2C.kext                  # v2.9.1 — Alder Lake I2C bus driver
+│       │   ├── VoodooI2CHID.kext               # I2C HID touchpad driver (polling mode)
+│       │   ├── VoodooPS2Controller.kext        # v2.3.8 — Built-in PS/2 keyboard
+│       │   └── XHCI-unsupported.kext           # v0.9.2 — Alder Lake-P XHCI 8086:51ED matching
+│       ├── Resources/                          # OpenCanopy GoldenGate theme & resources
+│       └── config.plist                        # OpenCore 1.0.8 config (sanitized SMBIOS)
+├── Screenshots/                                # System proof screenshots
+├── Utilities/                                  # Post-install & recovery scripts
+└── README.md                                   # Documentation
 ```
 
 ---
 
 ## Credits & Acknowledgements
 
-This EFI is made possible by the incredible work of the Hackintosh open-source community:
-* **[Acidanthera](https://github.com/acidanthera)** — for OpenCorePkg, Lilu, VirtualSMC, VoodooPS2, and AppleALC.
-* **[WhateverXe Team](https://github.com/b00t0x/WhateverXe)** — for pioneering Iris Xe graphics support on macOS.
-* **[Alexandred](https://github.com/alexandred)** & **[CoolStar](https://github.com/coolstar)** — for the outstanding VoodooI2C and VoodooGPIO drivers.
-* **[Dortania](https://dortania.github.io/)** — for the gold-standard OpenCore Install Guide.
-* **[hieplpvip](https://github.com/hieplpvip)** — for AsusSMC.
-* **[b00t0x](https://github.com/b00t0x)** — for CpuTopologyRebuild.
-* **[Belugaa_01](https://www.reddit.com/user/Belugaa_01/)** — for initial Alder Lake-U offset discovery.
+* **[Acidanthera](https://github.com/acidanthera)** — OpenCorePkg, Lilu, VirtualSMC, AppleALC, BrcmPatchRAM (`BlueToolFixup`), NVMeFix, RestrictEvents, VoodooPS2, BrightnessKeys
+* **[WhateverXe Team (`b00t0x`)](https://github.com/b00t0x/WhateverXe)** — Pioneering Intel Iris Xe graphics acceleration on macOS
+* **[laobamac](https://github.com/laobamac)** — `SimpleHDA` (`cn.laobamac.SimpleHDA`) & upstream `SimpleMtkBtFw`
+* **[flxxxxddd](https://github.com/flxxxxddd/SimpleMtkBtFw)** — `SimpleMtkBtFw` connac2 improvements & AirPods/BT audio patcher
+* **[jigyanshu-codes](https://github.com/jigyanshu-codes/SimpleMtkBtFw/releases/tag/v1.1.1)** — MediaTek MT7902 (`0x7902` / `13d3:3579`) firmware support, X1504ZA Alder Lake CoreAudio timing fix, and end-to-end verification
+* **[Alexandred](https://github.com/alexandred)** & **[CoolStar](https://github.com/coolstar)** — `VoodooI2C` & `VoodooGPIO`
+* **[DhinakG / USBToolBox](https://github.com/USBToolBox)** — `USBToolBox` & custom port mapping
+* **[hieplpvip](https://github.com/hieplpvip/AsusSMC)** & **[lvs1974](https://github.com/lvs1974/CpuTscSync)** — `AsusSMC` & `CpuTscSync`
+* **[Dortania](https://dortania.github.io/)** — OpenCore Install & ACPI Guides
+* **[Belugaa_01](https://www.reddit.com/user/Belugaa_01/)** — Initial Alder Lake-U WhateverXe offset discovery
 
 ---
 
 ### Community & Support
-If this repository helped you get your ASUS Vivobook or Alder Lake laptop running macOS with Metal 2 graphics acceleration, please leave a Star on GitHub to help others find this guide!
+If this repository helped you get your ASUS Vivobook or Alder Lake laptop running macOS smoothly with Metal 2 graphics, speakers, and MT7902 Bluetooth, please leave a Star on GitHub!
